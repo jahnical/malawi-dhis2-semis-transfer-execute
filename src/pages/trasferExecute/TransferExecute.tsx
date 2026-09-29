@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { TableDataRefetch, Modules } from "dhis2-semis-types";
 import { Table, useSchoolCalendarKey } from "dhis2-semis-components";
 import useGetSelectedKeys from "../../hooks/config/useGetSelectedKeys";
-import { useHeader, useTableData, useUrlParams, useViewPortWidth } from "dhis2-semis-functions";
+import { useHeader, useTableData, useTableSort, useUrlParams, useViewPortWidth } from "dhis2-semis-functions";
 import EnrollmentActionsButtons from "../../components/enrollmentButtons/EnrollmentActionsButtons";
 
 const TransferExecute = ({ i18n }: { i18n: D2I18n }) => {
@@ -16,8 +16,9 @@ const TransferExecute = ({ i18n }: { i18n: D2I18n }) => {
   const [selected, setSelected] = useState<any[]>([]);
   const { dataStoreData, program: programData } = useGetSelectedKeys()
   const { academicYear, grade, class: section, school, schoolName, } = urlParameters;
-  const { getData, tableData, loading } = useTableData({ module: Modules.Transfer });
+  const { getData, tableData, loading, sortableKeys } = useTableData({ module: Modules.Transfer });
   const [pagination, setPagination] = useState({ page: 1, pageSize: 50, totalPages: 0, totalElements: 0 });
+  const { sort, order, orderBy, createSortHandler, withSortableColumns } = useTableSort({ onSortChange: () => setPagination((prev) => ({ ...prev, page: 1 })) });
   const [filterState, setFilterState] = useState<{ dataElements: any; attributes: any; }>({ attributes: [], dataElements: [] });
   const { columns } = useHeader({ dataStoreData, programConfigData: programData as unknown as ProgramConfig, programStage: "" });
 
@@ -36,9 +37,10 @@ const TransferExecute = ({ i18n }: { i18n: D2I18n }) => {
           grade !== null ? `${dataStoreData.registration.grade}:in:${grade}` : null,
           section !== null ? `${dataStoreData.registration.section}:in:${section}` : null,
         ].filter((filter): filter is string => filter !== null),
+        sort: sort && { ...sort, program: programData! },
       });
     }
-  }, [filterState, refetch, school, pagination.page, pagination.pageSize, academicYear, grade, section]);
+  }, [filterState, refetch, school, pagination.page, pagination.pageSize, academicYear, grade, section, sort]);
 
   useEffect(() => {
     setPagination((prev: any) => ({ ...prev, totalPages: tableData?.pagination?.totalPages, totalElements: tableData?.pagination?.totalElements }))
@@ -53,7 +55,7 @@ const TransferExecute = ({ i18n }: { i18n: D2I18n }) => {
           programConfig={programData!}
           title={i18n.t("Transfer Execute")}
           viewPortWidth={viewPortWidth}
-          columns={columns}
+          columns={withSortableColumns(columns, sortableKeys)}
           tableData={tableData.data}
           selectable={true}
           selected={selected}
@@ -71,6 +73,10 @@ const TransferExecute = ({ i18n }: { i18n: D2I18n }) => {
           setFilterState={setFilterState}
           pagination={pagination}
           setPagination={setPagination}
+          sortable
+          order={order}
+          orderBy={orderBy}
+          createSortHandler={createSortHandler}
         />
       )}
     </div>
