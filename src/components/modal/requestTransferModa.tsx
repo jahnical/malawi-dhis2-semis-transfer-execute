@@ -100,7 +100,6 @@ export default function RequestTransferModal({
         })
         .catch(() => {
           setLoading(false);
-          setOpen(false);
         });
     } else {
       show({
