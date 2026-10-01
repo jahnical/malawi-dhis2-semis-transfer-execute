@@ -63,7 +63,7 @@ function enrollmentDeletionFormField({ formFieldsData, sectionName }: { formFiel
 
   return [
     {
-      name: `${sectionName} profile`,
+      name: `${sectionName === 'student' ? 'learner' : sectionName} profile`,
       // description: `${sectionName} personal details`,
       visible: true,
       fields: [
